@@ -83,6 +83,34 @@ fn main() {
                   	     }
                   }
             }
-   }
+   }else if args[1] == "--client" {
+             let mut stream = TcpStream::connect("127.0.0.0:8000")
+                     .expect("Failed to connect");
+             println!("Please enter the three points seperated with commas");
+             loop {
+                       let mut input = String::new();
+                       let mut buffer:Vec<u8> = Vec::new();
+                       stdin().read_line(&mut input)
+                       .expect("Failed to get input in stdin");
+                       let part: Vec<&str> = input.trim_matches('\n')
+                           .split(",").collect();
+                       let point = Point3D{
+                                x: part[0].parse().unwrap(),
+                                y: part[1].parse().unwrap(),
+                                z: part[2].parse().unwrap(),
+                         };
+                         stream.write_all(serde_json::to_string(&point)
+                            .unwrap().as_bytes())
+                            .expect("Failed to write the bytes to server");
+                        let mut reader = BufReader::new(&stream);
+                         reader.read_until(b'\n' , &mut buffer);
+                         let input = str::from_utf8(&buffer).
+                         expect("Could not write buffer string");
+                         if input == " "{
+                            eprintln!("Empty no string found");
+                         }
+                         println!("Response from server {}",input);
+                  }  
+      }
 
 }
